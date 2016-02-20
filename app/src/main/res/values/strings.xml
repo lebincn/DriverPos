@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">位置记录</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="driver_name">司机姓名</string>
+    <string name="phone_num">手机号</string>
+    <string name="car_num">车号后五位</string>
+    <string name="start">开始</string>
+
+    <string name="driver_name_cannot_be_empty">请输入司机姓名</string>
+    <string name="phone_num_cannot_be_empty">请输入手机号</string>
+    <string name="phone_num_incorrect">请输入正确的手机号</string>
+    <string name="car_num_cannot_be_empty">请输入车号后五位</string>
+    <string name="car_num_incorrect">车号后五位不正确</string>
+
+    <string name="Registering">正在注册请稍候...</string>
+    <string name="Registered_successfully">注册成功，开始记录</string>
+    <string name="network_anomalies">网络异常，请检查网络</string>
+    <string name="User_already_exists">用户已存在</string>
+    <string name="registration_failed_without_permission">权限不足，无法注册</string>
+    <string name="illegal_user_name">用户名非法</string>
+    <string name="Registration_failed">注册失败</string>
+
+</resources>
