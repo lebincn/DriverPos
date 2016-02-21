@@ -38,6 +38,9 @@
             </intent-filter>
         </activity>
 
+        <!-- 位置上报服务 -->
+        <service android:name="PositionService"/>
+
         <!-- 设置环信应用的appkey -->
         <meta-data android:name="EASEMOB_APPKEY"  android:value="bosszhao#driverpos" />
         <!-- 声明sdk所需的service SDK核心功能-->

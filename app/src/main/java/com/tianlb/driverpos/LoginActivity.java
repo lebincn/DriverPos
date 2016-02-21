@@ -2,6 +2,7 @@ package com.tianlb.driverpos;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -47,7 +48,7 @@ public class LoginActivity extends Activity {
     //注册
     public void login(View view) {
         final String driver_name = driverName.getText().toString().trim();
-        //TODO:加入字母混淆
+        //TODO:加入头字母，如：JD13912345678
         final String phone_num = phoneNum.getText().toString().trim();
         //TODO：应自动转换为大写字母
         final String car_num = carNum.getText().toString().trim();
@@ -72,14 +73,9 @@ public class LoginActivity extends Activity {
             return;
         }
 
-        //TODO: 已经注册的情况，直接登录
-
-
         //注册处理
-        final String username = phone_num;
-        final String password = car_num;
-
-        if (!TextUtils.isEmpty(username) && !TextUtils.isEmpty(password)) {
+ //       if (!TextUtils.isEmpty(username) && !TextUtils.isEmpty(password)) {
+        if (!TextUtils.isEmpty(phone_num) && !TextUtils.isEmpty(car_num)) {
             final ProgressDialog pd = new ProgressDialog(this);
             pd.setMessage(getResources().getString(R.string.Registering));
             pd.show();
@@ -88,7 +84,10 @@ public class LoginActivity extends Activity {
                 public void run() {
                     try {
                         // 调用sdk注册方法
-                        EMChatManager.getInstance().createAccountOnServer(username, password);
+//                      final String username = phone_num;
+//                      final String password = car_num;
+                        // EMChatManager.getInstance().createAccountOnServer(username, password);
+                        EMChatManager.getInstance().createAccountOnServer(phone_num, car_num);
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 if (!LoginActivity.this.isFinishing())
@@ -97,9 +96,13 @@ public class LoginActivity extends Activity {
                                 // TODO:用户名的保存
                                 //DemoHelper.getInstance().setCurrentUserName(username);
                                 Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registered_successfully), Toast.LENGTH_SHORT).show();
-                                // 注册成功，直接登录
-                                realLogin();
-//                                finish();
+
+                                // TODO:注册成功，进入服务
+                                // TODO：传入用户名，密码，昵称等
+                                Intent intent = new Intent(LoginActivity.this, PositionService.class);
+                                startActivity(intent);
+
+                                finish();
                             }
                         });
                     } catch (final EaseMobException e) {
@@ -111,10 +114,8 @@ public class LoginActivity extends Activity {
                                 if(errorCode== EMError.NONETWORK_ERROR){
                                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.network_anomalies), Toast.LENGTH_SHORT).show();
                                 }else if(errorCode == EMError.USER_ALREADY_EXISTS){
-                                    //TODO：已经注册，直接进入后续处理
-                                    //登录后转入后台
+                                    // 已注册会直接登录，正常不会进入此分支
                                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.User_already_exists), Toast.LENGTH_SHORT).show();
-                                    realLogin();
                                 }else if(errorCode == EMError.UNAUTHORIZED){
                                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.registration_failed_without_permission), Toast.LENGTH_SHORT).show();
                                 }else if(errorCode == EMError.ILLEGAL_USER_NAME){
@@ -127,11 +128,10 @@ public class LoginActivity extends Activity {
                     }
                 }
             }).start();
-
         }
     }
 
-    // TODO:进入后台运行
+ /*   // TODO:进入后台运行
     private void realLogin() {
         // 登录
 
@@ -143,44 +143,5 @@ public class LoginActivity extends Activity {
 
         // 转入后台
 
-    }
-
-    //
-    // 临时放置，未使用
-/*    private void backup(void) {
-        //暂定方案
-        username = phoneNum;
-        password = carNum;
-
-        login = (Button) findViewById(R.id.btn_login);
-        //登录按钮处理
-
-        login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                EMChatManager.getInstance().login(username.getText().toString(), password.getText().toString(), new EMCallBack() {
-                    @Override
-                    public void onSuccess() {
-                        //转入后台，开始记录，上传位置信息
-                    }
-
-                    @Override
-                    public void onError(int i, String s) {
-                        //没有注册
-                        //使用手机号注册新用户
-
-                        //用户名密码错误
-                        //1，输入错误
-                        //2，信息变更？
-                    }
-
-                    @Override
-                    public void onProgress(int i, String s) {
-
-                    }
-                });
-            }
-        });
     }*/
-
 }
