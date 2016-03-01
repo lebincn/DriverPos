@@ -1,160 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#eff2f6">
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:background="#eff2f6"
+    android:orientation="vertical">
 
-    <RelativeLayout
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="1" >
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center_horizontal"
+        android:text="@string/company"
+        android:textColor="#000000"
+        android:textSize="30sp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_marginTop="20dp"
-            android:gravity="center_horizontal"
-            android:text="公司名称"
-            android:textColor="#000"
-            android:textSize="30sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="150dp"
-            android:gravity="center_horizontal"
-            android:text="请输入如下信息并点击开始"
-            android:textColor="#000"
-            android:textSize="24sp" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"/>
-
-    </RelativeLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="50dp"
+        android:gravity="center_horizontal"
+        android:text="@string/info"
+        android:textColor="#000000"
+        android:textSize="24sp" />
 
     <LinearLayout
+        android:id="@+id/user_info_layout"
         android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_weight="1.5"
-        android:orientation="vertical" >
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <RelativeLayout
+        <EditText
+            android:id="@+id/driver_name"
             android:layout_width="match_parent"
             android:layout_height="54dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:background="#fff" >
+            android:background="#ffffff"
+            android:gravity="center_vertical"
+            android:hint="@string/driver_name"
+            android:maxLength="8"
+            android:paddingLeft="10dip"
+            android:singleLine="true"
+            android:textSize="18sp" />
 
-            <ImageView
-                android:id="@+id/iv_drivername"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginRight="10dip"
-                 />
-
-            <EditText
-                android:id="@+id/driver_name"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@id/iv_drivername"
-                android:background="@null"
-                android:hint="@string/driver_name"
-                android:paddingLeft="10dip"
-                android:singleLine="true"
-                android:textSize="18sp" />
-        </RelativeLayout>
-
-        <RelativeLayout
+        <EditText
+            android:id="@+id/phone_num"
             android:layout_width="match_parent"
             android:layout_height="54dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="10dp"
-            android:background="#fff" >
+            android:background="#ffffff"
+            android:gravity="center_vertical"
+            android:hint="@string/phone_num"
+            android:maxLength="11"
+            android:numeric="integer"
+            android:paddingLeft="10dip"
+            android:singleLine="true"
+            android:textSize="18sp" />
 
-            <ImageView
-                android:id="@+id/iv_phone_num"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginRight="10dip"
-                />
-
-            <EditText
-                android:id="@+id/phone_num"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@id/iv_phone_num"
-                android:background="@null"
-                android:hint="@string/phone_num"
-                android:paddingLeft="10dip"
-                android:singleLine="true"
-                android:textSize="18sp" />
-        </RelativeLayout>
-
-        <RelativeLayout
+        <EditText
+            android:id="@+id/car_num"
             android:layout_width="match_parent"
             android:layout_height="54dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="10dp"
-            android:background="#fff" >
+            android:background="#ffffff"
+            android:gravity="center_vertical"
+            android:hint="@string/car_num"
+            android:maxLength="7"
+            android:paddingLeft="10dip"
+            android:singleLine="true"
+            android:textSize="18sp" />
 
-            <ImageView
-                android:id="@+id/iv_car_num"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginRight="10dip"
-                />
-
-            <EditText
-                android:id="@+id/car_num"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@id/iv_car_num"
-                android:background="@null"
-                android:hint="@string/car_num"
-                android:paddingLeft="10dip"
-                android:singleLine="true"
-                android:textSize="18sp" />
-        </RelativeLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="20dp"
-            android:orientation="horizontal" >
-
-            <Button
-                android:id="@+id/btn_login"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/button_login_bg"
-                android:onClick="login"
-                android:paddingBottom="7dp"
-                android:paddingTop="7dp"
-                android:text="@string/start"
-                android:textColor="@android:color/white"
-                android:textSize="20sp" />
-        </LinearLayout>
     </LinearLayout>
+
+    <Button
+        android:id="@+id/btn_login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/button_login_bg"
+        android:text="@string/start"
+        android:textColor="@android:color/white"
+        android:textSize="20sp" />
 
 </LinearLayout>

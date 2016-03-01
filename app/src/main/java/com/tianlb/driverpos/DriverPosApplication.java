@@ -1,15 +1,26 @@
 package com.tianlb.driverpos;
 
 import android.app.Application;
-import com.easemob.chat.EMChat;
+import android.util.Log;
 
 /**
- * Created by tianlb on 2016/2/20.
+ * 司机端Application
  */
 public class DriverPosApplication extends Application {
+    private static final String TAG = "DriverPosApplication";
+
+    private static DriverPosApplication instance;
+
     @Override
     public void onCreate() {
         super.onCreate();
-        EMChat.getInstance().init(this);
+        Log.i(TAG, "onCreate");
+
+        instance = this;
     }
+
+    public static DriverPosApplication getInstance() {
+        return instance;
+    }
+
 }

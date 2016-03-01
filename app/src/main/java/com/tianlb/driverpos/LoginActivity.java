@@ -1,147 +1,273 @@
 package com.tianlb.driverpos;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.easemob.EMError;
-import com.easemob.chat.EMChatManager;
-import com.easemob.exceptions.EaseMobException;
+import com.tianlb.driverpos.common.Constant;
+import com.tianlb.driverpos.common.UserSharedPreferences;
+import com.tianlb.driverpos.common.util.CommonUtils;
+import com.tianlb.driverpos.receiver.BootBroadcastReceiver;
+import com.tianlb.driverpos.service.IUpPositionAidlInterface;
+import com.tianlb.driverpos.service.UpPositionService;
+import com.trello.rxlifecycle.components.support.RxAppCompatActivity;
+
+import java.util.Locale;
 
 /**
- * Created by tianlb on 2016/2/20.
- *  Register and Login
+ * A login screen that offers login via email/password.
  */
-public class LoginActivity extends Activity {
-    //司机名
+public class LoginActivity extends RxAppCompatActivity {
+
+    /**
+     * Logcat Tag
+     */
+    private static final String TAG = "LoginActivity";
+
+    /**
+     * 用户信息区域
+     */
+    private View userInfoLayout;
+
+    /**
+     * 司机名
+     */
     private EditText driverName;
-    //手机号
+
+    /**
+     * 手机号
+     */
     private EditText phoneNum;
-    //车号
+
+    /**
+     * 车号
+     */
     private EditText carNum;
-/*    //开始
-    private Button login;
-    //环信用户名 = 手机号
-    private EditText username;
-    //环信密码 = 车号后五位
-    private EditText password;
-    //环信昵称 = 司机名+手机号+车号*/
+
+    /**
+     * 开始按扭
+     */
+    private Button runButton;
+
+    /**
+     * 定时上报当前位置服务
+     */
+    private IUpPositionAidlInterface upPositionAidlInterface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        // 查找画面中需要处理的View对象
+        findAllViews();
+
+        // 绑定View事件处理
+        runButton.setOnClickListener(onClickListener);
+
+        // 监听UpPositionService运行时发出的广播
+        IntentFilter upPositionServiceFilter = new IntentFilter(Constant.UP_POSITION_SERVICE_ACTION);
+        registerReceiver(broadcastReceiver, upPositionServiceFilter);
+
+        // 开启定时上报当前位置服务
+        startUpPositionService();
+
+        // 加载画面之前录入的数据
+        loadData();
+
+        // 更新画面状态
+        updateUiStatus();
+    }
+//  tianlb comment for android 19
+//    @Override
+//    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+//        super.onSaveInstanceState(outState, outPersistentState);
+//        saveData();
+//    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(broadcastReceiver);
+    }
+
+    /**
+     * 查找画面中需要处理的View对象
+     */
+    private void findAllViews() {
+        userInfoLayout = findViewById(R.id.user_info_layout);
         driverName = (EditText) findViewById(R.id.driver_name);
         phoneNum = (EditText) findViewById(R.id.phone_num);
         carNum = (EditText) findViewById(R.id.car_num);
-
-        // 启动时若有用户信息，自动填入
-        // 不修改直接启动
+        runButton = (Button) findViewById(R.id.btn_login);
     }
 
-    //注册
-    public void login(View view) {
+    /**
+     * 加载画面之前录入的数据
+     */
+    private void loadData() {
+        driverName.setText(UserSharedPreferences.getInstance().getDriverName());
+        phoneNum.setText(UserSharedPreferences.getInstance().getPhoneNum());
+        carNum.setText(UserSharedPreferences.getInstance().getCarNum());
+    }
+
+    /**
+     * 保存画面录入的数据
+     */
+    private void saveData() {
+        UserSharedPreferences.getInstance().setDriverName(driverName.getText().toString().trim());
+        UserSharedPreferences.getInstance().setPhoneNum(phoneNum.getText().toString().trim());
+        UserSharedPreferences.getInstance().setCarNum(carNum.getText().toString().trim().toUpperCase());
+    }
+
+    /**
+     * 开启定时上报当前位置服务
+     */
+    private void startUpPositionService() {
+        try {
+            if (upPositionAidlInterface == null) {
+                //  开启定时上报当前位置服务
+                Intent service = new Intent(this, UpPositionService.class);
+                startService(service);
+
+                bindService(service, serviceConnection, BIND_AUTO_CREATE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 更新画面状态
+     */
+    private void updateUiStatus() {
+        boolean blnEnabled = false;
+        try {
+            if (upPositionAidlInterface != null && upPositionAidlInterface.isLoginDone()) {
+                runButton.setText(getString(R.string.stop));
+            } else {
+                blnEnabled = true;
+                runButton.setText(getString(R.string.start));
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+        userInfoLayout.setEnabled(blnEnabled);
+        driverName.setEnabled(blnEnabled);
+        phoneNum.setEnabled(blnEnabled);
+        carNum.setEnabled(blnEnabled);
+    }
+
+    /**
+     * 检查画面输入内容是否正确，并更新UpPositionService中的用户信息
+     */
+    private void checkRunUserInfo() {
         final String driver_name = driverName.getText().toString().trim();
-        //TODO:加入头字母，如：JD13912345678
         final String phone_num = phoneNum.getText().toString().trim();
-        //TODO：应自动转换为大写字母
-        final String car_num = carNum.getText().toString().trim();
+        final String car_num = carNum.getText().toString().trim().toUpperCase(Locale.ENGLISH);
 
         if (TextUtils.isEmpty(driver_name)) {
-            Toast.makeText(this, getResources().getString(R.string.driver_name_cannot_be_empty), Toast.LENGTH_SHORT).show();
+            CommonUtils.showToast(this, getResources().getString(R.string.driver_name_cannot_be_empty), Toast.LENGTH_SHORT);
             driverName.requestFocus();
             return;
         } else if (TextUtils.isEmpty(phone_num)) {
-            Toast.makeText(this, getResources().getString(R.string.phone_num_cannot_be_empty), Toast.LENGTH_SHORT).show();
+            CommonUtils.showToast(this, getResources().getString(R.string.phone_num_cannot_be_empty), Toast.LENGTH_SHORT);
             phoneNum.requestFocus();
             return;
         } else if (phone_num.length() != 11) {
-            Toast.makeText(this, getResources().getString(R.string.phone_num_incorrect), Toast.LENGTH_SHORT).show();
+            CommonUtils.showToast(this, getResources().getString(R.string.phone_num_incorrect), Toast.LENGTH_SHORT);
             return;
         } else if (TextUtils.isEmpty(car_num)) {
-            Toast.makeText(this, getResources().getString(R.string.car_num_cannot_be_empty), Toast.LENGTH_SHORT).show();
+            CommonUtils.showToast(this, getResources().getString(R.string.car_num_cannot_be_empty), Toast.LENGTH_SHORT);
             carNum.requestFocus();
             return;
-        } else if (car_num.length() != 5) {
-            Toast.makeText(this, getResources().getString(R.string.car_num_incorrect), Toast.LENGTH_SHORT).show();
+        } else if (car_num.length() != 5 && car_num.length() != 7) {
+            CommonUtils.showToast(this, getResources().getString(R.string.car_num_incorrect), Toast.LENGTH_SHORT);
             return;
         }
 
-        //注册处理
- //       if (!TextUtils.isEmpty(username) && !TextUtils.isEmpty(password)) {
-        if (!TextUtils.isEmpty(phone_num) && !TextUtils.isEmpty(car_num)) {
-            final ProgressDialog pd = new ProgressDialog(this);
-            pd.setMessage(getResources().getString(R.string.Registering));
-            pd.show();
+        try {
+            // 开启定时上报当前位置服务
+            startUpPositionService();
 
-            new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        // 调用sdk注册方法
-//                      final String username = phone_num;
-//                      final String password = car_num;
-                        // EMChatManager.getInstance().createAccountOnServer(username, password);
-                        EMChatManager.getInstance().createAccountOnServer(phone_num, car_num);
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                if (!LoginActivity.this.isFinishing())
-                                    pd.dismiss();
-                                // 保存用户名
-                                // TODO:用户名的保存
-                                //DemoHelper.getInstance().setCurrentUserName(username);
-                                Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registered_successfully), Toast.LENGTH_SHORT).show();
-
-                                // TODO:注册成功，进入服务
-                                // TODO：传入用户名，密码，昵称等
-                                Intent intent = new Intent(LoginActivity.this, PositionService.class);
-                                startActivity(intent);
-
-                                finish();
-                            }
-                        });
-                    } catch (final EaseMobException e) {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                if (!LoginActivity.this.isFinishing())
-                                    pd.dismiss();
-                                int errorCode=e.getErrorCode();
-                                if(errorCode== EMError.NONETWORK_ERROR){
-                                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.network_anomalies), Toast.LENGTH_SHORT).show();
-                                }else if(errorCode == EMError.USER_ALREADY_EXISTS){
-                                    // 已注册会直接登录，正常不会进入此分支
-                                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.User_already_exists), Toast.LENGTH_SHORT).show();
-                                }else if(errorCode == EMError.UNAUTHORIZED){
-                                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.registration_failed_without_permission), Toast.LENGTH_SHORT).show();
-                                }else if(errorCode == EMError.ILLEGAL_USER_NAME){
-                                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.illegal_user_name),Toast.LENGTH_SHORT).show();
-                                }else{
-                                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registration_failed) + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-                    }
-                }
-            }).start();
+            if (upPositionAidlInterface != null) {
+                // 重新设置UpPositionService中的用户信息
+                upPositionAidlInterface.startUpPosition(driver_name, phone_num, car_num);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
 
- /*   // TODO:进入后台运行
-    private void realLogin() {
-        // 登录
+    /**
+     * 开始按扭点击事件处理
+     */
+    private View.OnClickListener onClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            try {
+                if (upPositionAidlInterface != null && upPositionAidlInterface.isLoginDone()) {
+                    upPositionAidlInterface.stopUpPosition();
+                } else {
+                    saveData();
+                    checkRunUserInfo();
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 
-        // 若为新用户
-            // 加老板为好友
-            // 加入司机群
+    /**
+     * UpPositionService连接管理
+     */
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.i(TAG, "onServiceConnected");
+            upPositionAidlInterface = IUpPositionAidlInterface.Stub.asInterface(service);
+            updateUiStatus();
+        }
 
-        // 启动位置报告服务
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.i(TAG, "onServiceDisconnected");
+            upPositionAidlInterface = null;
+            updateUiStatus();
+        }
+    };
 
-        // 转入后台
+    /**
+     * 监听UpPositionService运行时发出的广播
+     */
+    private BroadcastReceiver broadcastReceiver = new BootBroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            super.onReceive(context, intent);
 
-    }*/
+            if (Constant.UP_POSITION_SERVICE_ACTION.equals(intent.getAction())) {
+                int type = intent.getIntExtra("type", 0);
+                updateUiStatus();
+                if (type == 3005) {
+                    finish();
+                }
+            }
+        }
+    };
 }
+
