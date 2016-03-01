@@ -10,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         android:gravity="center_horizontal"
         android:text="@string/company"
         android:textColor="#000000"
@@ -23,13 +23,14 @@
         android:layout_marginTop="50dp"
         android:gravity="center_horizontal"
         android:text="@string/info"
-        android:textColor="#000000"
+        android:textColor="@color/btn_login_pressed"
         android:textSize="24sp" />
 
     <LinearLayout
         android:id="@+id/user_info_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
         android:orientation="vertical">
 
         <EditText

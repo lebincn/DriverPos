@@ -27,6 +27,7 @@ import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMCmdMessageBody;
 import com.easemob.chat.EMGroupManager;
 import com.easemob.chat.EMMessage;
+import com.easemob.chat.TextMessageBody;
 import com.easemob.exceptions.EaseMobException;
 import com.easemob.util.EMLog;
 import com.tianlb.driverpos.DriverPosApplication;
@@ -183,12 +184,10 @@ public class UpPositionService extends Service {
     private void runTimeTask() {
         if (timeTaskHandler != null) {
             timeTaskHandler.removeMessages(UP_POSITION_MSG);
-            // TODO: * 60
-            // Release mode 5 minute
-            timeTaskHandler.sendEmptyMessageDelayed(UP_POSITION_MSG, getInterval() * 1000 * 5);
-//            timeTaskHandler.sendEmptyMessageDelayed(UP_POSITION_MSG, getInterval() * 1000 * 60 * 5);
-//  Test mode 1 second
-//            timeTaskHandler.sendEmptyMessageDelayed(UP_POSITION_MSG, getInterval() * 1000);
+            // Release mode interval * minutes
+            timeTaskHandler.sendEmptyMessageDelayed(UP_POSITION_MSG, getInterval() * 1000 * 60);
+            //  Test mode 1 second
+//          timeTaskHandler.sendEmptyMessageDelayed(UP_POSITION_MSG, getInterval() * 1000);
         }
     }
 
@@ -208,7 +207,6 @@ public class UpPositionService extends Service {
         @Override
         public void onEvent(EMNotifierEvent emNotifierEvent) {
             Log.i(TAG, "onEvent:" + emNotifierEvent.toString());
-            // TODO: 追加消息处理，接到消息，立即上报，或设置时间间隔
             if (emNotifierEvent.getEvent() == EMNotifierEvent.Event.EventNewCMDMessage) {
                 EMMessage message = (EMMessage) emNotifierEvent.getData();
                 //获取消息body
@@ -228,9 +226,28 @@ public class UpPositionService extends Service {
                     } catch (EaseMobException e) {
                         e.printStackTrace();
                     }
-
                     // 重新运行定时任务
                     runTimeTask();
+                }
+            } else if(emNotifierEvent.getEvent() == EMNotifierEvent.Event.EventNewMessage){
+                // 获取文本消息Body
+                EMMessage message = (EMMessage) emNotifierEvent.getData();
+                TextMessageBody txtBody = (TextMessageBody) message.getBody();
+                String cmd = txtBody.getMessage();
+
+                try {
+                    int intCmd = Integer.valueOf(cmd).intValue();
+                    if(120 < intCmd) {
+                        // 立即上报位置
+                        mLocationClient.start();
+                    } else {
+                        // 设置新的上报间隔，单位分钟
+                        setInterval((long)intCmd);
+                        runTimeTask();
+                    }
+                } catch (Exception e) {
+                    // 转换整数错误时，同样立即上报位置
+                    mLocationClient.start();
                 }
             }
         }
@@ -241,7 +258,8 @@ public class UpPositionService extends Service {
      */
     private long getInterval() {
         SharedPreferences settings = this.getSharedPreferences("service_info", MODE_PRIVATE);
-        return settings.getLong("service_info", 3);
+        return settings.getLong("interval", 3);
+//        return settings.getLong("service_info", 3);
     }
 
     /**

@@ -102,12 +102,13 @@ public class ChatHelper {
     public static void sendLocationPosInfo(double longitude, double latitude, String locationAddress) {
         EMConversation conversation = EMChatManager.getInstance().getConversation(Constant.ADMIN_NAME);
 
-        System.out.println("****** In sendLocationPosInfo ***********");
-        System.out.println("longitude = " + longitude);
-        System.out.println("latitude = " + latitude);
-        System.out.println("locationAddress = " + locationAddress);
+//        System.out.println("****** In sendLocationPosInfo ***********");
+//        System.out.println("longitude = " + longitude);
+//        System.out.println("latitude = " + latitude);
+//        System.out.println("locationAddress = " + locationAddress);
 
         // 正常处理，发送位置信息
+        // TODO: 在上报内容中加入司机信息
         EMMessage message = EMMessage.createSendMessage(EMMessage.Type.LOCATION);
         LocationMessageBody locBody = new LocationMessageBody(locationAddress, latitude, longitude);
         message.addBody(locBody);
